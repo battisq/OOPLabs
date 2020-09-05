@@ -1,0 +1,250 @@
+using System;
+using System.Text;
+using System.Globalization;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Mathematics
+{
+	class Base : IFormattable, ICloneable, IEnumerable, IEnumerable<double>
+	{
+		public virtual double this[int i, int j]
+		{
+			get
+			{
+				if (i < 0 || i >= _data.GetLength(0))
+					throw new IndexOutOfRangeException("Неверный индекс строки для матрицы\n");
+
+				if (j < 0 || j >= _data.GetLength(1))
+					throw new IndexOutOfRangeException("Неверный индекс столбца для матрицы\n");
+
+				return _data[i, j];
+			}
+
+			set
+			{
+				if (_data[i, j] != value)
+					_data[i, j] = value;
+			}
+		}
+
+		public double[,] _data;
+
+		protected Base() : this(0, 0) { }
+
+		protected Base(int dimension) : this(dimension, dimension) { }
+
+		protected Base(int rows, int cols)
+		{
+			if (rows < 0 || cols < 0)
+				throw new ArgumentOutOfRangeException("Неприемлемый размер для создания объекта\n");
+
+			_data = (rows * cols != 0) ? new double[rows, cols] : null;
+		}
+
+		protected Base(double[,] data)
+		{
+			if (data == null)
+				return;
+
+			_data = data.GetLength(0) * data.GetLength(1) != 0 ? new double[data.GetLength(0), data.GetLength(1)] : null;
+			_data = (double[,])data.Clone();
+		}
+
+		protected Base(Base source) : this(source?._data)
+		{
+			if (source == null)
+				throw new ArgumentNullException("Некорректная матрица\n");
+		}
+
+		protected Base(int rows, int cols, params double[] list) : this(rows, cols)
+		{
+			if (list == null)
+				throw new ArgumentNullException("Вместо переменных параметров получено null\n");
+
+			for (int i = 0, k = 0; i < rows; i++)
+			{
+				for (int j = 0; j < cols; j++)
+				{
+					if (k == list.Length)
+						break;
+
+					_data[i, j] = list[k++];
+				}
+			}
+		}
+
+		public static bool CheckSum(Base a, Base b)
+			=> a._data.GetLength(0) == b._data.GetLength(0) && a._data.GetLength(1) == b._data.GetLength(1);
+
+		public static bool CheckMul(Base a, Base b)
+			=> a._data.GetLength(1) == b._data.GetLength(0);
+
+		public virtual int Rank
+		{
+			get
+				=> _data.GetLength(0) > 1 && _data.GetLength(1) > 1 ? 2 : 1;
+		}
+
+		public static Base operator +(Base a, Base b)
+		{
+			if (!CheckSum(a, b))
+			{
+				if (a._data == null)
+					throw new NullReferenceException("Сложение невозможно. Объект не инициализирован\n");
+				else if (b._data == null)
+					throw new NullReferenceException("Сложение невозможно. Объект не инициализирован\n");
+				else
+					throw new InvalidOperationException("Сложение невозможно. Размер объекта не соответствует условию суммы\n");
+			}
+
+			Base result = new Base(a);
+
+			for (int i = 0; i < result._data.GetLength(0); i++)
+				for (int j = 0; j < result._data.GetLength(1); j++)
+					result._data[i, j] += b._data[i, j];
+
+			return result;
+		}
+
+		public static Base operator -(Base a, Base b)
+		{
+			if (!CheckSum(a, b))
+			{
+				if (a._data == null)
+					throw new NullReferenceException("Вычитание невозможно. Объект не инициализирован\n");
+				else if (b._data == null)
+					throw new NullReferenceException("Вычитание невозможно. Объект не инициализирован\n");
+				else
+					throw new InvalidOperationException("Вычитание невозможно. Размер объектов не соответствует условию разности\n");
+			}
+
+			Base result = new Base(a);
+
+			for (int i = 0; i < result._data.GetLength(0); i++)
+				for (int j = 0; j < result._data.GetLength(1); j++)
+					result._data[i, j] -= b._data[i, j];
+
+			return result;
+		}
+
+		public static Base operator *(Base a, Base b)
+		{
+			if (!CheckSum(a, b))
+			{
+				if (a._data == null)
+					throw new NullReferenceException("Умножение невозможно. Объект не инициализирован\n");
+				else if (b._data == null)
+					throw new NullReferenceException("Умножение невозможно. Объект не инициализирован\n");
+				else
+					throw new InvalidOperationException("Умножение невозможно. Размер объектов не соответствует условию произведения\n");
+			}
+
+			Base result = new Base(a._data.GetLength(0), b._data.GetLength(1));
+
+			for (int i = 0; i < a._data.GetLength(0); i++)
+				for (int j = 0; j < b._data.GetLength(1); j++)
+					for (int k = 0; k < a._data.GetLength(1); k++)
+						result._data[i, j] += a._data[i, k] * b._data[k, j];
+
+			return result;
+		}
+
+		public static Base operator *(Base a, double number)
+		{
+			if (a._data == null)
+				throw new NullReferenceException("Умножение невозможно. Объект не инициализирован\n");
+
+			Base result = new Base(a);
+
+			for (int i = 0; i < result._data.GetLength(0); i++)
+				for (int j = 0; j < result._data.GetLength(1); j++)
+					result._data[i, j] *= number;
+
+			return result;
+		}
+
+		public static Base operator *(double number, Base b)
+		{
+			if (b._data == null)
+				throw new NullReferenceException("Умножение невозможно. Объект не инициализирован\n");
+
+			Base result = new Base(b);
+
+			for (int i = 0; i < result._data.GetLength(0); i++)
+				for (int j = 0; j < result._data.GetLength(1); j++)
+					result._data[i, j] *= number;
+
+			return result;
+		}
+
+		public override string ToString()
+			=> ToString("G", CultureInfo.CurrentCulture);
+
+		/// <summary>
+		/// Вид форматной строки: {index[:formatString][,alignment]}
+		/// </summary>
+		public string ToString(string format)
+			=> ToString(format, CultureInfo.CurrentCulture);
+
+		/// <summary>
+		/// Вид форматной строки: {index[:formatString][,alignment]}
+		/// </summary>
+		public string ToString(string format, IFormatProvider provider)
+		{
+			if (_data == null)
+				return "null";
+
+			provider = provider ?? CultureInfo.CurrentCulture;
+
+			string width = "0";
+
+			if (string.IsNullOrEmpty(format))
+				format = "{0:G} ";
+			else if (format.IndexOf(',') != -1)
+			{
+				int index = format.IndexOf(',');
+
+				width = format.Substring(index + 1);
+				format = string.Format("{{0,{0}:{1}}}", width, format.Substring(0, index));
+
+				if (width == "" || format == "")
+					throw new FormatException("Неверный формат для печати объекта {0}");
+			}
+			else
+			{
+				width = char.IsLetter(format[0]) || format[0] == '0' ? "12" : string.Format("{{0,{0}}} ", format);
+				format = string.Format(char.IsLetter(format[0]) || format[0] == '0' ? "{{0:{0}}} " : "{{0,{0}}}", format);
+			}
+
+			StringBuilder str = new StringBuilder(Convert.ToInt32(width) * _data.Length + 2 * _data.GetLength(0));
+
+			for (int i = 0; i < _data.GetLength(0); i++)
+			{
+				for (int j = 0; j < _data.GetLength(1); j++)
+					str.AppendFormat(format, _data[i, j].ToString(provider));
+
+				str.AppendFormat("\n");
+			}
+
+			return str.ToString();
+		}
+
+		object ICloneable.Clone()
+			=> Clone();
+
+		public Base Clone()
+			=> new Base(this);
+
+		public IEnumerator GetEnumerator()
+			=> _data.GetEnumerator();
+
+		IEnumerator<double> IEnumerable<double>.GetEnumerator()
+		{
+			for (int i = 0; i < _data.GetLength(0); i++)
+				for (int j = 0; j < _data.GetLength(1); j++)
+					yield return _data[i, j];
+		}
+	}
+}

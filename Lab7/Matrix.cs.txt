@@ -1,0 +1,49 @@
+using System;
+using System.Text;
+using System.Globalization;
+using System.Collections;
+using System.Collections.Generic;
+
+namespace Mathematics
+{
+	class Matrix : Matrix, ICloneable
+	{
+		public Matrix() : base() {}
+
+		public Matrix(int dimension) : this(dimension, dimension) {}
+
+		public Matrix(int rows, int cols) : base(rows, cols) {}
+
+		public Matrix(double[,] matrix) : base(matrix) {}
+
+		public Matrix(int rows, int cols, params double[] list) : base(rows, cols, list) {}
+
+		public Matrix(Matrix source) : base(source) {}
+
+		public Matrix(Matrix source) : base(source) {} 
+
+
+
+		public int Rows
+		{
+			get => _data == null? 0 : _data.GetLength(0);
+		}
+
+		public int Cols
+		{
+			get => _data == null ? 0 : _data.GetLength(1);
+		}
+
+		new public Matrix Clone()
+			=> new Matrix(this);
+
+		public static Matrix operator +(Matrix a, Matrix b)
+			=> new Matrix((Base)a + b);
+
+		public static Matrix operator -(Matrix a, Matrix b)
+			=> new Matrix((Base)a - b);
+
+		public static Matrix operator *(Matrix a, Matrix b)
+			=> new Matrix((Base)a * b);
+	}
+}

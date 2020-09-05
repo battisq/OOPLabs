@@ -1,0 +1,480 @@
+/*
+#define _CRT_SECURE_NO_WARNINGS
+
+#include "Mathematics.h"
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+namespace Mathematics
+{
+	int Base::ID = 0;
+	
+	void Base::init(const double * _array)
+	{
+		if (rows < 0 || cols < 0)
+			throw std::length_error("Непреемлимый размер матрицы " + std::to_string(id) + "\n");
+
+		if (!rows || !cols)
+		{
+			rows = cols = 0;
+			array = NULL;
+
+			return;
+		}
+
+		array = new double[rows * cols];
+
+		if (_array)
+		{
+			init(NULL);
+
+			for (int i = 0; i < rows * cols; i++)
+			{
+				array[i] = _array[i];
+			}
+		}
+		else
+			for (int i = 0; i < rows * cols; i++)
+				array[i] = 0;
+
+	}
+
+	Base::Base()
+	{
+		rows = cols = 0;
+		array = NULL;
+
+		id = ++ID;
+		std::cout << "Конструктор базового класса " << id << std::endl;
+	}
+
+	Base::Base(int _rows, int _cols, const double *_array) : rows(_rows), cols(_cols)
+	{
+		init(_array);
+
+		id = ++ID;
+		std::cout << "Конструктор базового класса " << id << std::endl;
+	}
+
+	Base::Base(int _rows, int _cols, const double(*_function)(int, int))
+	{
+		rows = _rows;
+		cols = _cols;
+
+		init(NULL);
+
+		for (int i = 0; i < rows; i++)
+		{
+			for (int j = 0; j < cols; j++)
+			{
+				array[i*rows + j] = _function(i, j);
+			}
+		}
+
+		id = ++ID;
+		std::cout << "Конструктор базового класса " << id << std::endl;
+	}
+
+	Base::Base(const Base &_a)
+	{
+		rows = _a.rows;
+		cols = _a.cols;
+
+		init(_a.array);
+
+		id = ++ID;
+		std::cout << "Конструктор базового класса " << id << std::endl;
+	}
+
+	Base::Base(Base &&_a) : rows(0), cols(0), array(NULL)
+	{
+		std::swap(rows, _a.rows);
+		std::swap(cols, _a.cols);
+		std::swap(array, _a.array);
+
+		id = ++ID;
+		std::cout << "Конструктор базового класса " << id << std::endl;
+	}
+
+	Base::~Base()
+	{
+		if (array)
+			delete[] array;
+
+		std::cout << "Деструктор базового класса " << id << std::endl;
+	}
+
+	bool Base::checkSum(const Base & _a) const
+	{
+		return rows == _a.rows && cols == _a.cols;
+	}
+
+	bool Base::checkMul(const Base & _a) const
+	{
+		if (cols == _a.cols == 1)
+			return rows == _a.rows;
+
+		return cols == _a.rows;
+	}
+
+	double Base::maxEl(void) const
+	{
+		double max = array[0];
+
+		for (int i = 0; i < cols*rows; i++)
+			if (array[i] > max)
+				max = array[i];
+
+		return max;
+	}
+
+	double Base::minEl(void) const
+	{
+		double min = array[0];
+
+		for (int i = 0; i < cols*rows; i++)
+			if (array[i] < min)
+				min = array[i];
+
+		return min;
+	}
+
+	int Base::getId(void) const
+	{
+		return id;
+	}
+
+	int Base::getRank(void) const
+	{
+		return rows >= 2 ? 2 : 1;
+	}
+
+	Base & Base::operator = (const Base & _a)
+	{
+		if (rows*cols != _a.rows*_a.cols)
+		{
+			if (array)
+				delete[] array;
+
+			array = _a.array != NULL ? new double[_a.rows*_a.cols] : NULL;
+		}
+
+		rows = _a.rows;
+		cols = _a.cols;
+
+		for (int i = 0; i < rows*cols; i++)
+			array[i] = _a.array[i];
+
+		return *this;
+	}
+
+	Base & Base::operator += (const Base & _a)
+	{
+		if (!checkSum(_a))
+		{
+			if (!cols*rows || !array)
+				throw std::logic_error("Сложение невозможно. Объект " + to_string(id) + " неинициализирован\n");
+			else if (!_a.cols*_a.rows || !_a.array)
+				throw std::logic_error("Сложение невозможно. Объект " + to_string(_a.id) + " неинициализирован\n");
+			else if (_a.cols*_a.rows == cols * rows == 0 || array == _a.array == NULL)
+				throw std::logic_error("Сложение невозможно. Объекты " + to_string(id) + " & " + to_string(_a.id) + "неинициализированны\n");
+			else
+				throw std::logic_error("Сложение невозможно. Непреемлимый размер объектов " + to_string(id) + " & " + std::to_string(_a.id) + "\n");
+		}
+
+		for (int i = 0; i < rows*cols; i++)
+			array[i] += _a.array[i];
+
+		return *this;
+	}
+
+	Base & Base::operator -= (const Base & _a)
+	{
+		if (!checkSum(_a))
+		{
+			if (!cols*rows || !array)
+				throw std::logic_error("Разность невозможна. Объект " + to_string(id) + " неинициализирован\n");
+			else if (!_a.cols*_a.rows || !_a.array)
+				throw std::logic_error("Разность невозможна. Объект " + to_string(_a.id) + " неинициализирован\n");
+			else if (_a.cols*_a.rows == cols * rows == 0 || array == _a.array == NULL)
+				throw std::logic_error("Разность невозможна. Объекты " + to_string(id) + " & " + to_string(_a.id) + "неинициализированны\n");
+			else
+				throw std::logic_error("Разность невозможна. Непреемлимый размер объектов " + to_string(id) + " & " + to_string(_a.id) + "\n");
+		}
+
+		for (int i = 0; i < rows*cols; i++)
+			array[i] -= _a.array[i];
+
+		return *this;
+	}
+
+	Base & Base::operator *= (const Base & _a)
+	{
+		if (!checkMul(_a))
+		{
+			if (!cols*rows || array)
+				throw std::logic_error("Умножение невозможно. Объект " + to_string(id) + " неинициализирован\n");
+			else if (!_a.cols*_a.rows || _a.array)											  
+				throw std::logic_error("Умножение невозможно. Объект " + to_string(_a.id) + " неинициализирован\n");
+			else if (_a.cols*_a.rows == cols * rows == 0 || array == _a.array == NULL)
+				throw std::logic_error("Умножение невозможно. Объекты " + to_string(id) + " & " + to_string(_a.id) + "неинициализированны\n");
+			else
+				throw std::logic_error("Умножение невозможно. Непреемлимый размер объектов " + to_string(id) + " & " + to_string(_a.id) + "\n");
+		}
+
+		Base newArr(rows, _a.cols);
+
+		for (int i = 0; i < rows; i++)
+		{
+			for (int j = 0; j < _a.cols; j++)
+			{
+				for (int k = 0; k < cols; k++)
+				{
+					newArr.array[i*_a.cols + j] += array[i*cols + k] * _a.array[k*_a.cols + j];
+				}
+			}
+		}
+
+		*this = std::move(newArr);
+
+		return *this;
+	}
+
+	Base & Base::operator *= (double _number)
+	{
+		if (rows && cols)
+		{
+			for (int i = 0; i < rows*cols; i++)
+			{
+				array[i] *= _number;
+			}
+		}
+
+		return *this;
+	}
+
+	Base operator + (const Base &_a, const Base &_b)
+	{
+		Base c(_a);
+
+		return c += _b;
+	}
+
+	Base operator-(const Base & _a, const Base & _b)
+	{
+		Base c(_a);
+
+		return c -= _b;
+	}
+
+	Base operator*(const Base & _a, const Base & _b)
+	{
+		Base c(_a);
+
+		return c *= _b;
+	}
+
+	Base operator*(const Base & _a, double _number)
+	{
+		Base c(_a);
+
+		return c *= _number;
+	}
+
+	Base operator*(double _number, const Base & _a)
+	{
+		Base c(_a);
+
+		return c *= _number;
+	}
+
+	std::ostream & operator << (std::ostream & _out, const Base & _a)
+	{
+		std::streamsize width = _out.width(), precition = _out.precision();
+
+		for (int i = 0; i < _a.rows; i++)
+		{
+			for (int j = 0; j < _a.cols; j++)
+			{
+				_out.width(width);
+				_out.precision(precition);
+
+				_out << std::fixed << _a.array[i * _a.rows + j] << " ";
+			}
+			
+			_out << "\n";
+		}
+
+		return _out;
+	}
+
+	Vector::Vector() : Base()
+	{
+		std::cout << "Конструктор вектора " << id << std::endl;
+	}
+
+	Vector::Vector(int _size, double *_array) : Base(_size, 1, _array)
+	{
+		std::cout << "Конструктор вектора " << id << std::endl;
+	}
+
+	Vector::Vector(int _size, const double(*_function)(int, int)) : Base(_size, 1, _function)
+	{
+		std::cout << "Конструктор вектора " << id << std::endl;
+	}
+
+	Vector::Vector(const Base & _a) : Base(_a)
+	{
+		std::cout << "Конструктор вектора " << id << std::endl;
+	}
+
+	Vector::Vector(Base && _a) : Base(std::move(_a))
+	{
+		std::cout << "Конструктор вектора " << id << std::endl;
+	}
+
+	Vector::~Vector()
+	{
+		std::cout << "Деструктор вектора " << id << std::endl;
+	}
+
+	int Vector::getSize(void) const
+	{
+		return rows;
+	}
+
+	Vector & Vector::operator = (const Base & _a)
+	{
+		if (_a.getRank() > 1)
+			throw logic_error("Присвоение объекту " + to_string(id) + " объекта " + to_string(_a.getId()) + "  невозможно. Вектор не может стать матрицей\n");
+
+		Base::operator = (_a);
+
+		return *this;
+	}
+
+	Vector & Vector::operator += (const Base & _a)
+	{
+		if (_a.getRank() > 1)
+			throw logic_error("Сложение объектов " + to_string(id) + " и " + to_string(_a.getId()) + "  невозможно. Вектор и матрица не соотносятся");
+
+		Base::operator += (_a);
+
+		return *this;
+	}
+
+	Vector & Vector::operator -= (const Base & _a)
+	{
+		if (_a.getRank() > 1)
+			throw logic_error("Вычитание объектов " + to_string(id) + " и " + to_string(_a.getId()) + "  невозможно. Вектор и матрица не соотносятся");
+
+		Base::operator -= (_a);
+
+		return *this;
+	}
+
+	Vector & Vector::operator *= (const Base & _a)
+	{
+		//if (!checkMul(a))
+		//	throw Exception("Умножение не возможно\n", id, a.getId());
+
+		Base::operator *= (_a);
+
+		return *this;
+	}
+
+	Vector & Vector::operator *= (double num)
+	{
+		Base::operator *= (num);
+
+		return *this;
+	}
+
+	double & Vector::operator[](int _i)
+	{
+		//if (!(i >= 0 && i < rows))
+		//	throw Exception("Неверный индекс вектора\n", id);
+
+		return array[_i];
+	}
+
+	const double & Vector::operator[](int _i) const
+	{
+		//if (!(i >= 0 && i < rows))
+		//	throw Exception("Неверный индекс вектора\n", id);
+
+		return array[_i];
+	}
+
+	double operator*(const Vector & _a, const Vector & _b)
+	{
+		//if (!a.checkSum(b))
+		//	throw Exception("Скалярное произведение векторов невозможно\n", a.id, b.id);
+
+		double mul = 0;
+
+		for (int i = 0; i < _a.cols; i++)
+			mul += _a[i] + _b[i];
+
+		return mul;
+	}
+
+	Row::Row(int _cols, double * _rows, int _id) : cols(_cols), row(_rows), id(_id) {}
+
+	double & Row::operator[](int _j)
+	{
+		//if (!(j >= 0 && j < cols))
+		//	throw Exception("Неверный индекс столбца для матрицы\n", id);
+
+		return row[_j];
+	}
+
+	const double & Row::operator[](int _j) const
+	{
+		//if (!(j >= 0 && j < cols))
+		//	throw Exception("Неверный индекс столбца для матрицы\n", id);
+
+		return row[_j];
+	}
+
+	Matrix::Matrix() : Base()
+	{
+		std::cout << "Конструктор матрицы " << id << "\n";
+	}
+
+	Matrix::Matrix(int _rows, int _cols, double *_array) : Base(_rows, _cols, _array)
+	{
+		std::cout << "Конструктор матрицы " << id << "\n";
+	}
+
+	Matrix::Matrix(int _row, int _col, const double(*_function)(int, int)) : Base(_row, _col, _function)
+	{
+		std::cout << "Конструктор матрицы " << id << "\n";
+	}
+
+	Matrix::Matrix(const Base & _a) : Base(_a)
+	{
+		std::cout << "Конструктор матрицы " << id << "\n";
+	}
+
+	int Matrix::getRow(void)
+	{
+		return rows;
+	}
+
+	int Matrix::getCol(void)
+	{
+		return cols;
+	}
+
+	Matrix & Matrix::operator = (const Vector &_a)
+	{
+		Base::operator= (_a);
+
+		return *this;
+	}
+}
+*/
+

@@ -1,0 +1,110 @@
+/*
+#pragma once
+
+#include <iostream>
+
+namespace Mathematics
+{
+	class Base
+	{
+	protected:
+		int id;
+		static int ID;
+		int rows, cols;
+		double *array;
+
+		void init(const double *_array);
+
+		Base();
+		Base(int _row, int _col = 0, const double *_arr = NULL);
+		Base(int _row, int _col, const double(*_function)(int, int));
+		Base(const Base &_a);
+		Base(Base &&_a);
+		~Base();
+
+	public:
+
+		bool checkSum(const Base &_a) const;
+		bool checkMul(const Base &_a) const;
+
+		double maxEl(void) const;
+		double minEl(void) const;
+
+		int getRank(void) const;
+		int getId(void) const;
+
+		virtual Base &operator = (const Base &_a);
+		virtual Base &operator += (const Base &_a);
+		virtual Base &operator -= (const Base &_a);
+		virtual Base &operator *= (const Base &_a);
+		virtual Base &operator *= (double _number);
+
+		friend Base operator + (const Base &_a, const Base &_b);
+		friend Base operator - (const Base &_a, const Base &_b);
+		friend Base operator * (const Base &_a, const Base &_b);
+		friend Base operator * (const Base &_a, double _number);
+		friend Base operator * (double _number, const Base &_a);
+		
+		friend std::ostream & operator << (std::ostream &_out, const Base &_a);
+	};
+
+	class Vector : public Base
+	{
+	public:
+		Vector();
+		explicit Vector(int _size, double *array = NULL);
+		explicit Vector(int _size, const double(*_function)(int, int));
+		Vector(const Base &_a);
+		Vector(Base &&_a);
+		~Vector();
+
+		int getSize() const;
+
+		Vector & operator = (const Base &_a);
+		Vector & operator += (const Base &_a);
+		Vector & operator -= (const Base &_a);
+		Vector & operator *= (const Base &_a);
+		Vector & operator *= (double _number);
+
+		double & operator[] (int _i);
+		const double & operator[] (int _i) const;
+
+		friend double operator * (const Vector &_a, const Vector &_b);
+	};
+
+	class Row
+	{
+	private:
+		double *row;
+		int cols;
+		int id;
+
+	public:
+
+		Row(int _col, double *_row, int _id);
+
+		double & operator[] (int _j);
+		const double & operator[] (int j) const;
+	};
+
+	class Matrix : public Base
+	{
+	public:
+		Matrix();
+		explicit Matrix(int _row, int _col, double *_array = 0);
+		explicit Matrix(int _row, int _col, const double (*_function)(int, int));
+		Matrix(const Base &_a);
+
+		int getRow(void);
+		int getCol(void);
+
+		Matrix & operator = (const Vector &_a);
+		//Matrix & operator += (const Vector &_a);
+		//Matrix & operator -= (const Vector &_a);
+		//Matrix & operator *= (const Vector &_a);
+		Row operator[] (int _i);
+		const Row operator[] (int _i) const;
+	};
+}
+*/
+

@@ -1,0 +1,91 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Mathematics
+{
+	class Vector : Base
+	{
+		public Vector() : base() {}
+
+		public Vector(int size) : base(size, 1) {}
+
+		public Vector(double[] vector) : this(vector == null? 0 : vector.Length)
+		{
+			if (vector == null)
+				return;
+			
+			_data = vector.Length != 0 ? new double[vector.Length, 1] : null;
+
+			for (int i = 0; i < vector.Length; i++)
+				_data[i, 0] = vector[i];
+		}
+
+		public Vector(int size, params double[] list) : base(size, 1, list) {}
+
+		public Vector(Vector source) : base(source) {}
+
+		public Vector(Base source) : base(source?.Rank == 1? source : new Vector())
+		{
+			if (source.Rank > 2)
+				new ArgumentException("Вектор не может перенять свойства матрицы");
+		}
+
+		public bool IsColumn()
+			=> _data.GetLength(0) > 1;
+
+		public double this[int i]
+		{
+			get
+			{
+				if (i < 0 || i >= _data.Length)
+					throw new IndexOutOfRangeException("Неверный индекс для вектора\n");
+
+				return _data.GetLength(0) > 1 ? _data[i, 0] : _data[0, i];
+			}
+
+			set
+			{
+				if (_data.GetLength(0) > 1)
+					if (_data[i, 0] != value)
+						_data[i, 0] = value;
+				else
+					if (_data[0, i] != value)
+						_data[0, i] = value;
+			}
+		}
+
+		public int Size
+		{
+			get 
+				=> _data == null ? 0 : _data.Length;
+		}
+
+		public void Transposition()
+		{
+			double[,] temp = new double[_data.GetLength(1), _data.GetLength(0)];
+
+			for (int i = 0; i < _data.GetLength(0); i++)
+				for (int j = 0; j < _data.GetLength(1); j++)
+					temp[j, i] = _data[i, j];
+
+			_data = temp;
+			temp = null;
+		}
+
+		new public Vector Clone()
+			=> new Vector(this);
+
+		public static Vector operator + (Vector a, Vector b)
+			=> new Vector((Base)a + b);
+
+		public static Vector operator - (Vector a, Vector b)
+			=> new Vector((Base)a - b);
+
+		public static Matrix operator * (Vector a, Vector b)
+			=> new Matrix((Base)a * b);
+	}
+}
